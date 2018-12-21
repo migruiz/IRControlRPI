@@ -16,6 +16,8 @@ RUN cd /python-broadlink \
 && python -m pip install netaddr \
 && python setup.py install
 
+RUN chmod +x /python-broadlink/cli/broadlink_cli
+RUN chmod +x /python-broadlink/cli/broadlink_discovery
 
 
 RUN [ "cross-build-end" ]  
