@@ -12,8 +12,10 @@ RUN mkdir /python-broadlink
 
 COPY python-broadlink /python-broadlink
 
-RUN cd /rm3 \
-&& make 
+RUN cd /python-broadlink \
+&& python -m pip install pycrypto  \
+&& python -m pip install netaddr \
+&& python setup.py install
 
 
 
@@ -21,6 +23,3 @@ RUN [ "cross-build-end" ]
 
 
 
-EXPOSE 8883 
-
-ENTRYPOINT ["mosquitto"]
