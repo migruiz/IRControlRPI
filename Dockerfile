@@ -4,7 +4,16 @@ RUN [ "cross-build-start" ]
 
 
 RUN apt-get update && \
-apt-get install -yqq --no-install-recommends mosquitto  && rm -rf /var/lib/apt/lists/*
+apt-get install -yqq --no-install-recommends g++ gcc make wget python-dev && rm -rf /var/lib/apt/lists/*
+
+RUN  apt -yqq install python-pip
+
+RUN mkdir /python-broadlink
+
+COPY python-broadlink /python-broadlink
+
+RUN cd /rm3 \
+&& make 
 
 
 
