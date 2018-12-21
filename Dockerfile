@@ -6,7 +6,7 @@ RUN [ "cross-build-start" ]
 RUN apt-get update && \
 apt-get install -yqq --no-install-recommends g++ gcc make wget python-dev && rm -rf /var/lib/apt/lists/*
 
-RUN  apt -yqq install python-pip
+RUN  apt -y install python-pip
 
 RUN mkdir /python-broadlink
 
