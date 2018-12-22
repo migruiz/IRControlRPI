@@ -4,9 +4,9 @@ var spawn = require('child_process').spawn;
 var mqtt = require('mqtt')
 global.mtqqURL=process.env.mtqqURL
 global.livingroom_tv_powerswitch="livingroom/tv/powerswitch"
-global.rmIPAddress="192.168.1.9"
-global.rmMACAddress="f434fff33344"
-global.rmTYPE="0x2712"
+global.rmIPAddress=process.env.rmIPAddress
+global.rmMACAddress=process.env.rmMACAddress
+global.rmTYPE=process.env.rmTYPE
 
 var client  = mqtt.connect(global.mtqqURL)
  
