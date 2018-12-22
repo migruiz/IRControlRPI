@@ -3,108 +3,37 @@ var spawn = require('child_process').spawn;
 
 var mqtt = require('mqtt')
 global.mtqqURL=process.env.mtqqURL
-global.turnOnLightsTopic="lightson"
-global.lightsOnNextNodeTopic="lightsOnNextNode"
-global.lightsOffNextNodeTopic="lightsOffNextNode"
-global.turnOffLightsTopic="lightsoff"
-global.onCodes=JSON.parse(process.env.onCodes)
-global.offCodes=JSON.parse(process.env.offCodes)
-global.nodeId=parseInt(process.env.nodeId)
-global.waitForNextCommand=500
-global.expectedSingleCommandExecTime=400
-global.roundCycles=3
+global.livingroom_tv_powerswitch="livingroom/tv/powerswitch"
+global.rmIPAddress="192.168.1.9"
+global.rmMACAddress="f434fff33344"
+global.rmTYPE="0x2712"
 
 var client  = mqtt.connect(global.mtqqURL)
  
 client.on('connect', function () {
-  client.subscribe(global.turnOnLightsTopic)
-  client.subscribe(global.turnOffLightsTopic)
-  client.subscribe(global.lightsOnNextNodeTopic)
-  client.subscribe(global.lightsOffNextNodeTopic)
+  client.subscribe(global.livingroom_tv_powerswitch)
 })
 client.on('message',async function (topic, message) {
-    if (topic === global.turnOnLightsTopic) {    
-        if (global.nodeId==1){
-            await executeMultipleCommandsAsync(global.onCodes)
-            client.publish(global.lightsOnNextNodeTopic,(global.nodeId+1).toString())
-        }  
-        else{  
-            waitToSwitchLightsOn()
-        }
+    if (topic === global.livingroom_tv_powerswitch) {    
+        await executeSendIRCodeAsync('/IRApp/codes/livingroom_tv_lg.power')
     }
-    else  if (topic === global.lightsOnNextNodeTopic && parseInt(message)==global.nodeId) {
-        clearTimeout(lightsOnTimeout)
-        await executeMultipleCommandsAsync(global.onCodes)
-        client.publish(global.lightsOnNextNodeTopic,(global.nodeId+1).toString())
-    }    
-    else  if (topic === global.turnOffLightsTopic) {
-        if (global.nodeId==1){
-            await executeMultipleCommandsAsync(global.offCodes)
-            client.publish(global.lightsOffNextNodeTopic,(global.nodeId+1).toString())
-        }  
-        else{  
-            waitToSwitchLightsOff()
-        }
-    }
-    else  if (topic === global.lightsOffNextNodeTopic && parseInt(message)==global.nodeId) {
-        clearTimeout(lightsOffTimeout)
-        await executeMultipleCommandsAsync(global.offCodes)
-        client.publish(global.lightsOffNextNodeTopic,(global.nodeId+1).toString())
-    }  
+   
   })
 
-var lightsOnTimeout;
-function waitToSwitchLightsOn(){
-    var expectedSingleCommandExecution=global.waitForNextCommand+global.expectedSingleCommandExecTime;
-    console.log("expectedSingleCommandExecutionOn",expectedSingleCommandExecution)
-    var expectedFullCycleExecution=global.roundCycles*global.onCodes.length*expectedSingleCommandExecution
-    console.log("expectedFullCycleExecutionOn",expectedFullCycleExecution)
-    var waitTime=(global.nodeId-1)*expectedFullCycleExecution;
-    console.log("waitTimeOn",waitTime)
-    lightsOnTimeout=setTimeout(async ()=>{ 
-       await executeMultipleCommandsAsync(global.onCodes)
-       client.publish(global.lightsOnNextNodeTopic,(global.nodeId+1).toString())
-    },waitTime)
-}
 
-
-
-var lightsOffTimeout;
-function waitToSwitchLightsOff(){
-    var expectedSingleCommandExecution=global.waitForNextCommand+global.expectedSingleCommandExecTime;
-    console.log("expectedSingleCommandExecutionOff",expectedSingleCommandExecution)
-    var expectedFullCycleExecution=global.roundCycles*global.offCodes.length*expectedSingleCommandExecution
-    console.log("expectedFullCycleExecutionOff",expectedFullCycleExecution)
-    var waitTime=(global.nodeId-1)*expectedFullCycleExecution;
-    console.log("waitTimeOff",waitTime)
-    lightsOffTimeout=setTimeout(async ()=>{ 
-       await executeMultipleCommandsAsync(global.offCodes)
-       client.publish(global.lightsOffNextNodeTopic,(global.nodeId+1).toString())
-    },waitTime)
-}
-
-
-const timeout = ms => new Promise(res => setTimeout(res, ms))
-
-async function executeMultipleCommandsAsync(codes) {
-    for (var i = 0; i < global.roundCycles; i++) {
-        for (codeIndex = 0; codeIndex < codes.length;codeIndex++) { 
-            var code=codes[codeIndex];
-             await executeSingleCommandAsync(code);
-             await timeout(global.waitForNextCommand);
-        }
-
-
-    }
-}
-
-function executeSingleCommandAsync(code) {
+//./broadlink_cli --type 0x2712 --host 192.168.88.07 --mac aabbccddeeff --send @OFFICE-TV.power
+function executeSendIRCodeAsync(codeFilePath) {
     return new Promise(function (resolve, reject) {
-        const command = spawn('/433Utils/RPi_utils/codesend'
+        const command = spawn('/python-broadlink/cli/broadlink_cli'
             , [
-                code
-                , '-l'
-                , '180'
+                '--type'
+                , global.rmTYPE
+                , '--host'
+                , global.rmIPAddress
+                , '--mac'
+                , global.rmMACAddress
+                , '--send'
+                , codeFilePath
             ]);
         command.stdout.on('data', data => {
             console.log(data.toString());

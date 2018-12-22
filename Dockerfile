@@ -19,8 +19,20 @@ RUN cd /python-broadlink \
 RUN chmod +x /python-broadlink/cli/broadlink_cli
 RUN chmod +x /python-broadlink/cli/broadlink_discovery
 
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
+&& apt-get install -yqq --no-install-recommends nodejs   && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /IRApp/
+
+
+COPY IRApp/package.json  /IRApp/package.json
+
+RUN cd /IRApp/ \
+&& npm  install 
 
 RUN [ "cross-build-end" ]  
+
+ENTRYPOINT ["node","/IRApp/app.js"]
 
 
 
