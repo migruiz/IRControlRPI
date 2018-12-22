@@ -3,10 +3,11 @@ var spawn = require('child_process').spawn;
 
 var mqtt = require('mqtt')
 global.mtqqURL=process.env.mtqqURL
-global.livingroom_tv_powerswitch="livingroom/tv/powerswitch"
 global.rmIPAddress=process.env.rmIPAddress
 global.rmMACAddress=process.env.rmMACAddress
 global.rmTYPE=process.env.rmTYPE
+global.livingroom_tv_powerswitch='livingroom/tv/powerswitch'
+global.livingroom_lgtv_powerswitchCode='26006000000127951213111411391114111410151015101510391139111411391139103a10391139111411141114103a1015101510141114113911391139101510391139113911391000052c0001284c11000c5e00012a4c10000c620001274b11000d050000000000000000'
 
 var client  = mqtt.connect(global.mtqqURL)
  
@@ -15,14 +16,14 @@ client.on('connect', function () {
 })
 client.on('message',async function (topic, message) {
     if (topic === global.livingroom_tv_powerswitch) {    
-        await executeSendIRCodeAsync('/IRApp/codes/livingroom_tv_lg.power')
+        await executeSendIRCodeAsync(global.livingroom_lgtv_powerswitchCode)
     }
    
   })
 
 
 //./broadlink_cli --type 0x2712 --host 192.168.88.07 --mac aabbccddeeff --send @OFFICE-TV.power
-function executeSendIRCodeAsync(codeFilePath) {
+function executeSendIRCodeAsync(irCode) {
     return new Promise(function (resolve, reject) {
         const command = spawn('/python-broadlink/cli/broadlink_cli'
             , [
@@ -33,7 +34,7 @@ function executeSendIRCodeAsync(codeFilePath) {
                 , '--mac'
                 , global.rmMACAddress
                 , '--send'
-                , codeFilePath
+                , irCode
             ]);
         command.stdout.on('data', data => {
             console.log(data.toString());
