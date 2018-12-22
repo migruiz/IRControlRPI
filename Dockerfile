@@ -30,6 +30,8 @@ COPY IRApp/package.json  /IRApp/package.json
 RUN cd /IRApp/ \
 && npm  install 
 
+COPY IRApp /IRApp
+
 RUN [ "cross-build-end" ]  
 
 ENTRYPOINT ["node","/IRApp/app.js"]
